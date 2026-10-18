@@ -1,5 +1,6 @@
 package com.pulsechat.chat.dto;
 
+import com.pulsechat.chat.model.MessageType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.Map;
@@ -15,12 +16,12 @@ public record SendMessageRequest(
     @Size(max = 2000, message = "Content cannot exceed 2000 characters")
     String content,
 
-    String type,
+    MessageType type,
 
     Map<String, String> metadata
 ) {
     public SendMessageRequest {
-        type = (type == null || type.isBlank()) ? "TEXT" : type;
+        type = (type == null) ? MessageType.TEXT : type;
         metadata = (metadata == null) ? Map.of() : Map.copyOf(metadata);
     }
 }

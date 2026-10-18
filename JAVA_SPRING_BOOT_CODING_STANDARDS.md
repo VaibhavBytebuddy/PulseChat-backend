@@ -382,3 +382,17 @@ public class PostHogTelemetryService {
    * Enable `server.shutdown: graceful` in `application.yml` to allow pending WebSocket frames and database writes to complete before process exit.
 4. **Environment Variables**:
    * Inject all secrets (`POSTHOG_API_KEY`, `MONGODB_URI`, JWT secrets) via environment variables. Never commit credentials into source control.
+
+---
+
+## 10. Domain Enums & 1-on-1 Messaging Standards
+
+### 10.1 Strongly-Typed Enums Over Strings
+* **Strict Rule**: Never use loose `String` literals for categories, statuses, or classifications (e.g. message types, user roles, delivery receipts).
+* Always define and use explicit, strongly-typed Java `enum`s (e.g. `MessageType { TEXT, IMAGE, VIDEO, AUDIO, FILE, SYSTEM, CODE_SNIPPET }`).
+* Ensure DTO records and MongoDB entities share or cleanly map to these enums.
+
+### 10.2 1-on-1 Direct Messaging Architecture
+* Model 1-on-1 chats using **Deterministic Conversation IDs**:
+  $$\text{conversationId} = \text{"dm\_"} + \min(\text{userA}, \text{userB}) + \text{"\_"} + \max(\text{userA}, \text{userB})$$
+* Use STOMP user destinations (`/user/queue/...` via `convertAndSendToUser`) to route private frames strictly to the recipient's active socket session without broadcasting across public topics.

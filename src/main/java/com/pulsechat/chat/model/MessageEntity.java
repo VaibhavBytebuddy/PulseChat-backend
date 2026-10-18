@@ -34,7 +34,7 @@ public class MessageEntity extends MongoBaseEntity {
     private String content;
 
     @Builder.Default
-    private String type = "TEXT";
+    private MessageType type = MessageType.TEXT;
 
     @Builder.Default
     private Map<String, String> metadata = Map.of();

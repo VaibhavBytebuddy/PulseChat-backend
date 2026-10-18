@@ -115,7 +115,7 @@ public class ChatServiceImpl implements ChatService {
                 "room_id", roomId,
                 "message_id", savedMessage.getId(),
                 "content_length", request.content().length(),
-                "message_type", request.type(),
+                "message_type", request.type().name(),
                 "execution_time_ms", executionTime,
                 "$groups", Map.of("room", roomId)
             )

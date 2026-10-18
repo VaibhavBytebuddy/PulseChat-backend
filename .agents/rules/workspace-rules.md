@@ -37,3 +37,11 @@ Every concept must explicitly answer:
 ## Rule 3: Self-Descriptive Markdown Documentation
 * Maintain comprehensive, beautifully organized markdown files with self-descriptive filenames in the repository (e.g., `01_DEEP_DIVE_TCP_HTTP_AND_WEBSOCKET_NETWORKING.md`).
 * Update these documentation files alongside the conversation so they serve as a permanent, enterprise-grade engineering reference.
+
+---
+
+## Rule 5: Code Typing Standards & Domain Design
+1. **Never Use Loose Strings for Classifications**:
+   * Always define strongly-typed Java enums (`enum`) or TypeScript union types for states, event types, and message formats (e.g. `MessageType`).
+2. **Unified Chat Modeling**:
+   * Both Group Chat and 1-on-1 Direct Messaging must follow deterministic conversation patterns and explicit private queue routing (`/user/queue/...`).
