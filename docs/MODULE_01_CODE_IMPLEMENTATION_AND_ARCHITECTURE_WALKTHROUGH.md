@@ -141,3 +141,22 @@ public record SendMessageRequest(
 ```
 * **WHAT**: Java 21 immutable record with Jakarta Bean Validation annotations.
 * **WHY**: Eliminates mutable state, prevents thread concurrency bugs, and rejects invalid payloads before hitting the database.
+
+---
+
+## 3. Lombok and MapStruct Architecture
+
+### 3.1 Lombok on Domain Documents (`@Getter`, `@Setter`, `@Builder`)
+* **WHAT**:
+  * Annotated `ChatRoomDocument` and `MessageDocument` with `@Getter`, `@Setter`, `@NoArgsConstructor`, `@AllArgsConstructor`, and `@Builder`.
+* **WHY**:
+  * Eliminates hundreds of lines of boilerplate getters, setters, and constructors while preserving clean object mutation for Spring Data MongoDB auditing and persistence.
+
+### 3.2 MapStruct (`ChatMapper.java`)
+* **WHAT**:
+  * Defined `@Mapper(componentModel = "spring")` interface `ChatMapper`.
+  * Generates compile-time implementations for converting between MongoDB documents and Java 21 `record` DTOs.
+* **WHY**:
+  * **Compile-Time Safety**: Type errors are caught during `mvn compile`, not at runtime.
+  * **Zero Reflection Overhead**: Generates direct getter-to-constructor invocations (faster than manual mapping and ModelMapper).
+  * **Separation of Concerns**: `ChatServiceImpl` focuses entirely on business logic and STOMP broadcasting without manual conversion boilerplate.

@@ -5,6 +5,7 @@ import com.pulsechat.chat.dto.MessageResponse;
 import com.pulsechat.chat.dto.RoomResponse;
 import com.pulsechat.chat.dto.SendMessageRequest;
 import com.pulsechat.chat.dto.TypingIndicatorEvent;
+import com.pulsechat.chat.mapper.ChatMapper;
 import com.pulsechat.chat.model.ChatRoomDocument;
 import com.pulsechat.chat.model.MessageDocument;
 import com.pulsechat.chat.repository.ChatRoomRepository;
@@ -19,6 +20,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,17 +34,20 @@ public class ChatServiceImpl implements ChatService {
     private final MessageRepository messageRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final PostHogTelemetryService telemetryService;
+    private final ChatMapper chatMapper;
 
     public ChatServiceImpl(
         ChatRoomRepository roomRepository,
         MessageRepository messageRepository,
         SimpMessagingTemplate messagingTemplate,
-        PostHogTelemetryService telemetryService
+        PostHogTelemetryService telemetryService,
+        ChatMapper chatMapper
     ) {
         this.roomRepository = roomRepository;
         this.messageRepository = messageRepository;
         this.messagingTemplate = messagingTemplate;
         this.telemetryService = telemetryService;
+        this.chatMapper = chatMapper;
     }
 
     @Override
@@ -51,11 +56,10 @@ public class ChatServiceImpl implements ChatService {
             throw new IllegalArgumentException("Room with name '" + request.name() + "' already exists");
         }
 
-        ChatRoomDocument room = new ChatRoomDocument(
-            request.name(),
-            request.description(),
-            request.createdBy() != null ? request.createdBy() : "system"
-        );
+        ChatRoomDocument room = chatMapper.toChatRoomDocument(request);
+        if (room.getCreatedBy() == null || room.getCreatedBy().isBlank()) {
+            room.setCreatedBy("system");
+        }
         ChatRoomDocument saved = roomRepository.save(room);
 
         telemetryService.capture(
@@ -68,21 +72,19 @@ public class ChatServiceImpl implements ChatService {
             )
         );
 
-        return toRoomResponse(saved);
+        return chatMapper.toRoomResponse(saved);
     }
 
     @Override
     public List<RoomResponse> getAllRooms() {
-        return roomRepository.findAll().stream()
-            .map(this::toRoomResponse)
-            .toList();
+        return chatMapper.toRoomResponseList(roomRepository.findAll());
     }
 
     @Override
     public RoomResponse getRoomById(String roomId) {
         ChatRoomDocument room = roomRepository.findById(roomId)
             .orElseThrow(() -> new ResourceNotFoundException("Room not found: " + roomId));
-        return toRoomResponse(room);
+        return chatMapper.toRoomResponse(room);
     }
 
     @Override
@@ -92,20 +94,13 @@ public class ChatServiceImpl implements ChatService {
         ChatRoomDocument room = roomRepository.findById(roomId)
             .orElseThrow(() -> new ResourceNotFoundException("Room not found: " + roomId));
 
-        MessageDocument message = new MessageDocument(
-            roomId,
-            request.senderId(),
-            request.senderName(),
-            request.content(),
-            request.type(),
-            request.metadata()
-        );
+        MessageDocument message = chatMapper.toMessageDocument(request, roomId);
         MessageDocument savedMessage = messageRepository.save(message);
 
         room.setMessageCount(room.getMessageCount() + 1);
         roomRepository.save(room);
 
-        MessageResponse response = toMessageResponse(savedMessage);
+        MessageResponse response = chatMapper.toMessageResponse(savedMessage);
 
         // Broadcast to all active WebSocket listeners on /topic/room/{roomId}
         messagingTemplate.convertAndSend("/topic/room/" + roomId, response);
@@ -140,42 +135,15 @@ public class ChatServiceImpl implements ChatService {
             messages = messageRepository.findByRoomIdAndCreatedAtBeforeOrderByCreatedAtDesc(roomId, cursor, pageable);
         }
 
-        // Return chronological order for UI consumption
-        List<MessageResponse> responses = messages.stream()
-            .map(this::toMessageResponse)
-            .toList();
-        
-        List<MessageResponse> mutableList = new java.util.ArrayList<>(responses);
-        Collections.reverse(mutableList);
-        return Collections.unmodifiableList(mutableList);
+        List<MessageResponse> responses = chatMapper.toMessageResponseList(messages);
+
+        List<MessageResponse> chronologicalList = new ArrayList<>(responses);
+        Collections.reverse(chronologicalList);
+        return Collections.unmodifiableList(chronologicalList);
     }
 
     @Override
     public void broadcastTyping(TypingIndicatorEvent event) {
         messagingTemplate.convertAndSend("/topic/room/" + event.roomId() + "/typing", event);
-    }
-
-    private RoomResponse toRoomResponse(ChatRoomDocument doc) {
-        return new RoomResponse(
-            doc.getId(),
-            doc.getName(),
-            doc.getDescription(),
-            doc.getCreatedBy(),
-            doc.getCreatedAt(),
-            doc.getMessageCount()
-        );
-    }
-
-    private MessageResponse toMessageResponse(MessageDocument doc) {
-        return new MessageResponse(
-            doc.getId(),
-            doc.getRoomId(),
-            doc.getSenderId(),
-            doc.getSenderName(),
-            doc.getContent(),
-            doc.getType(),
-            doc.getCreatedAt(),
-            doc.getMetadata()
-        );
     }
 }

@@ -1,5 +1,10 @@
 package com.pulsechat.chat.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
@@ -11,6 +16,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.Instant;
 import java.util.Map;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Document(collection = "messages")
 @CompoundIndexes({
     @CompoundIndex(name = "room_created_desc_idx", def = "{'roomId': 1, 'createdAt': -1}"),
@@ -27,8 +37,11 @@ public class MessageDocument {
     private String senderId;
     private String senderName;
     private String content;
+
+    @Builder.Default
     private String type = "TEXT";
 
+    @Builder.Default
     private Map<String, String> metadata = Map.of();
 
     @CreatedDate
@@ -37,33 +50,12 @@ public class MessageDocument {
     @Version
     private Long version;
 
-    public MessageDocument() {}
-
     public MessageDocument(String roomId, String senderId, String senderName, String content, String type, Map<String, String> metadata) {
         this.roomId = roomId;
         this.senderId = senderId;
         this.senderName = senderName;
         this.content = content;
-        this.type = type;
+        this.type = (type != null && !type.isBlank()) ? type : "TEXT";
         this.metadata = metadata != null ? metadata : Map.of();
     }
-
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-    public String getRoomId() { return roomId; }
-    public void setRoomId(String roomId) { this.roomId = roomId; }
-    public String getSenderId() { return senderId; }
-    public void setSenderId(String senderId) { this.senderId = senderId; }
-    public String getSenderName() { return senderName; }
-    public void setSenderName(String senderName) { this.senderName = senderName; }
-    public String getContent() { return content; }
-    public void setContent(String content) { this.content = content; }
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
-    public Map<String, String> getMetadata() { return metadata; }
-    public void setMetadata(Map<String, String> metadata) { this.metadata = metadata; }
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
-    public Long getVersion() { return version; }
-    public void setVersion(Long version) { this.version = version; }
 }
