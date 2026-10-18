@@ -177,3 +177,20 @@ public record SendMessageRequest(
 * **WHY (DRY Principle)**:
   * Eliminates repeating ID, auditing, and optimistic locking annotations across domain models.
   * Every collection entity (e.g. `ChatRoomEntity`, `MessageEntity`) inherits auditing and versioning automatically.
+
+---
+
+## 5. Enterprise Auditing Architecture (`@CreatedBy`, `@LastModifiedBy`)
+
+### 5.1 Field Centralization in `MongoBaseEntity`
+* **WHAT**:
+  * Added `@CreatedBy private String createdBy;` and `@LastModifiedBy private String lastModifiedBy;` to `MongoBaseEntity`.
+* **WHY**:
+  * Automatically records user audit trails across every entity in MongoDB without manually writing tracking code in services or controllers.
+
+### 5.2 Context Resolution via `AuditorAware<String>`
+* **WHAT**:
+  * Implemented `MongoAuditConfig` registering an `AuditorAware<String>` bean.
+  * Created `UserContextHolder` providing a ThreadLocal bridge to supply the current user identity to Spring Data during entity persistence.
+* **WHY**:
+  * Decouples domain persistence from authentication protocols. Works seamlessly across REST requests, STOMP frames, and background jobs.

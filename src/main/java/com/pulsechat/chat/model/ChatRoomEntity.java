@@ -22,7 +22,6 @@ public class ChatRoomEntity extends MongoBaseEntity {
     private String name;
 
     private String description;
-    private String createdBy;
 
     @Builder.Default
     private long messageCount = 0;

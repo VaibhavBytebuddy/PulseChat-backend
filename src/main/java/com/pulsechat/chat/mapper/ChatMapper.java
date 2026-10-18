@@ -25,6 +25,7 @@ public interface ChatMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
     @Mapping(target = "messageCount", constant = "0L")
     @Mapping(target = "version", ignore = true)
     ChatRoomEntity toChatRoomEntity(CreateRoomRequest request);
@@ -33,6 +34,8 @@ public interface ChatMapper {
     @Mapping(target = "roomId", source = "roomId")
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdBy", source = "request.senderId")
+    @Mapping(target = "lastModifiedBy", ignore = true)
     @Mapping(target = "version", ignore = true)
     MessageEntity toMessageEntity(SendMessageRequest request, String roomId);
 }
