@@ -1,0 +1,11 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.idea/
+*.iml
+.vscode/
+.env
+.env.*
+*.token
+local_token.md
+.DS_Store
+Thumbs.db
