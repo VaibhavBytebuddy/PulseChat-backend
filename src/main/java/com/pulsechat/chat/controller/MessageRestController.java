@@ -4,6 +4,9 @@ import com.pulsechat.chat.dto.MessageResponse;
 import com.pulsechat.chat.dto.SendMessageRequest;
 import com.pulsechat.chat.service.ChatService;
 import jakarta.validation.Valid;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,13 +22,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/rooms/{roomId}/messages")
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MessageRestController {
 
-    private final ChatService chatService;
-
-    public MessageRestController(ChatService chatService) {
-        this.chatService = chatService;
-    }
+    ChatService chatService;
 
     @GetMapping
     public ResponseEntity<List<MessageResponse>> getMessages(

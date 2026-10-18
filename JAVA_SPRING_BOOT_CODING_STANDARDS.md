@@ -396,3 +396,27 @@ public class PostHogTelemetryService {
 * Model 1-on-1 chats using **Deterministic Conversation IDs**:
   $$\text{conversationId} = \text{"dm\_"} + \min(\text{userA}, \text{userB}) + \text{"\_"} + \max(\text{userA}, \text{userB})$$
 * Use STOMP user destinations (`/user/queue/...` via `convertAndSendToUser`) to route private frames strictly to the recipient's active socket session without broadcasting across public topics.
+
+---
+
+## 11. Boilerplate-Free Dependency Injection & Logging
+
+### 11.1 `@RequiredArgsConstructor` & `@FieldDefaults`
+* **Standard Pattern**: In all `@Service`, `@RestController`, and component classes:
+  1. Use `@RequiredArgsConstructor` for constructor dependency injection.
+  2. Use `@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)` to avoid writing `private final` repeatedly on every injected bean.
+  3. Use `@Slf4j` to avoid writing manual `LoggerFactory.getLogger(...)` declarations.
+
+```java
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public class ChatServiceImpl implements ChatService {
+    ChatRoomRepository roomRepository;
+    MessageRepository messageRepository;
+    SimpMessagingTemplate messagingTemplate;
+    PostHogTelemetryService telemetryService;
+    ChatMapper chatMapper;
+}
+```

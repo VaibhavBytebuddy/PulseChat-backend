@@ -1,8 +1,9 @@
 package com.pulsechat.core.telemetry;
 
 import jakarta.annotation.PreDestroy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -13,20 +14,21 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@Slf4j
 @Service
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PostHogTelemetryService {
 
-    private static final Logger log = LoggerFactory.getLogger(PostHogTelemetryService.class);
-
-    private final PostHogProperties properties;
-    private final RestClient restClient;
-    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    PostHogProperties properties;
+    RestClient restClient;
+    ExecutorService executor;
 
     public PostHogTelemetryService(PostHogProperties properties) {
         this.properties = properties;
         this.restClient = RestClient.builder()
             .baseUrl(properties.host() != null && !properties.host().isBlank() ? properties.host() : "https://us.i.posthog.com")
             .build();
+        this.executor = Executors.newVirtualThreadPerTaskExecutor();
     }
 
     public void capture(String distinctId, String eventName, Map<String, Object> eventProperties) {

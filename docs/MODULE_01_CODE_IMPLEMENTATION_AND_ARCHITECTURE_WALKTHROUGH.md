@@ -194,3 +194,14 @@ public record SendMessageRequest(
   * Created `UserContextHolder` providing a ThreadLocal bridge to supply the current user identity to Spring Data during entity persistence.
 * **WHY**:
   * Decouples domain persistence from authentication protocols. Works seamlessly across REST requests, STOMP frames, and background jobs.
+
+---
+
+## 6. Boilerplate-Free Service & Controller Architecture
+
+### 6.1 Modern Lombok Annotations Pattern
+* **WHAT**:
+  * Added `@RequiredArgsConstructor`, `@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)`, and `@Slf4j` across `ChatServiceImpl`, `RoomRestController`, `MessageRestController`, `MessageWebSocketController`, and `PostHogTelemetryService`.
+* **WHY**:
+  * Eliminates manual `private final` field repetition and verbose constructor boilerplate.
+  * Preserves 100% immutable constructor injection under the hood for testability and runtime immutability.

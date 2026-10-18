@@ -12,8 +12,10 @@ import com.pulsechat.chat.repository.ChatRoomRepository;
 import com.pulsechat.chat.repository.MessageRepository;
 import com.pulsechat.core.exception.ResourceNotFoundException;
 import com.pulsechat.core.telemetry.PostHogTelemetryService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -25,30 +27,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ChatServiceImpl implements ChatService {
 
-    private static final Logger log = LoggerFactory.getLogger(ChatServiceImpl.class);
-
-    private final ChatRoomRepository roomRepository;
-    private final MessageRepository messageRepository;
-    private final SimpMessagingTemplate messagingTemplate;
-    private final PostHogTelemetryService telemetryService;
-    private final ChatMapper chatMapper;
-
-    public ChatServiceImpl(
-        ChatRoomRepository roomRepository,
-        MessageRepository messageRepository,
-        SimpMessagingTemplate messagingTemplate,
-        PostHogTelemetryService telemetryService,
-        ChatMapper chatMapper
-    ) {
-        this.roomRepository = roomRepository;
-        this.messageRepository = messageRepository;
-        this.messagingTemplate = messagingTemplate;
-        this.telemetryService = telemetryService;
-        this.chatMapper = chatMapper;
-    }
+    ChatRoomRepository roomRepository;
+    MessageRepository messageRepository;
+    SimpMessagingTemplate messagingTemplate;
+    PostHogTelemetryService telemetryService;
+    ChatMapper chatMapper;
 
     @Override
     public RoomResponse createRoom(CreateRoomRequest request) {

@@ -4,19 +4,20 @@ import com.pulsechat.chat.dto.SendMessageRequest;
 import com.pulsechat.chat.dto.TypingIndicatorEvent;
 import com.pulsechat.chat.service.ChatService;
 import jakarta.validation.Valid;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
 
 @Controller
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MessageWebSocketController {
 
-    private final ChatService chatService;
-
-    public MessageWebSocketController(ChatService chatService) {
-        this.chatService = chatService;
-    }
+    ChatService chatService;
 
     @MessageMapping("/chat.send/{roomId}")
     public void handleMessage(
