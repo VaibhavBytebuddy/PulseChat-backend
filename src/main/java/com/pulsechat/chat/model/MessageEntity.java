@@ -1,35 +1,30 @@
 package com.pulsechat.chat.model;
 
+import com.pulsechat.core.entity.MongoBaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Version;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.Instant;
 import java.util.Map;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @Document(collection = "messages")
 @CompoundIndexes({
     @CompoundIndex(name = "room_created_desc_idx", def = "{'roomId': 1, 'createdAt': -1}"),
     @CompoundIndex(name = "sender_created_idx", def = "{'senderId': 1, 'createdAt': -1}")
 })
-public class MessageDocument {
-
-    @Id
-    private String id;
+public class MessageEntity extends MongoBaseEntity {
 
     @Indexed
     private String roomId;
@@ -43,19 +38,4 @@ public class MessageDocument {
 
     @Builder.Default
     private Map<String, String> metadata = Map.of();
-
-    @CreatedDate
-    private Instant createdAt;
-
-    @Version
-    private Long version;
-
-    public MessageDocument(String roomId, String senderId, String senderName, String content, String type, Map<String, String> metadata) {
-        this.roomId = roomId;
-        this.senderId = senderId;
-        this.senderName = senderName;
-        this.content = content;
-        this.type = (type != null && !type.isBlank()) ? type : "TEXT";
-        this.metadata = metadata != null ? metadata : Map.of();
-    }
 }

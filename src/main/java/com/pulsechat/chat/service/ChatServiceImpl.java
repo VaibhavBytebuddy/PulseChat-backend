@@ -6,8 +6,8 @@ import com.pulsechat.chat.dto.RoomResponse;
 import com.pulsechat.chat.dto.SendMessageRequest;
 import com.pulsechat.chat.dto.TypingIndicatorEvent;
 import com.pulsechat.chat.mapper.ChatMapper;
-import com.pulsechat.chat.model.ChatRoomDocument;
-import com.pulsechat.chat.model.MessageDocument;
+import com.pulsechat.chat.model.ChatRoomEntity;
+import com.pulsechat.chat.model.MessageEntity;
 import com.pulsechat.chat.repository.ChatRoomRepository;
 import com.pulsechat.chat.repository.MessageRepository;
 import com.pulsechat.core.exception.ResourceNotFoundException;
@@ -56,11 +56,11 @@ public class ChatServiceImpl implements ChatService {
             throw new IllegalArgumentException("Room with name '" + request.name() + "' already exists");
         }
 
-        ChatRoomDocument room = chatMapper.toChatRoomDocument(request);
+        ChatRoomEntity room = chatMapper.toChatRoomEntity(request);
         if (room.getCreatedBy() == null || room.getCreatedBy().isBlank()) {
             room.setCreatedBy("system");
         }
-        ChatRoomDocument saved = roomRepository.save(room);
+        ChatRoomEntity saved = roomRepository.save(room);
 
         telemetryService.capture(
             saved.getCreatedBy(),
@@ -82,7 +82,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public RoomResponse getRoomById(String roomId) {
-        ChatRoomDocument room = roomRepository.findById(roomId)
+        ChatRoomEntity room = roomRepository.findById(roomId)
             .orElseThrow(() -> new ResourceNotFoundException("Room not found: " + roomId));
         return chatMapper.toRoomResponse(room);
     }
@@ -91,11 +91,11 @@ public class ChatServiceImpl implements ChatService {
     public MessageResponse sendMessage(String roomId, SendMessageRequest request) {
         long startTime = System.currentTimeMillis();
 
-        ChatRoomDocument room = roomRepository.findById(roomId)
+        ChatRoomEntity room = roomRepository.findById(roomId)
             .orElseThrow(() -> new ResourceNotFoundException("Room not found: " + roomId));
 
-        MessageDocument message = chatMapper.toMessageDocument(request, roomId);
-        MessageDocument savedMessage = messageRepository.save(message);
+        MessageEntity message = chatMapper.toMessageEntity(request, roomId);
+        MessageEntity savedMessage = messageRepository.save(message);
 
         room.setMessageCount(room.getMessageCount() + 1);
         roomRepository.save(room);
@@ -127,7 +127,7 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public List<MessageResponse> getMessages(String roomId, Instant cursor, int limit) {
         Pageable pageable = PageRequest.of(0, Math.min(limit, 100));
-        List<MessageDocument> messages;
+        List<MessageEntity> messages;
 
         if (cursor == null) {
             messages = messageRepository.findByRoomIdOrderByCreatedAtDesc(roomId, pageable);

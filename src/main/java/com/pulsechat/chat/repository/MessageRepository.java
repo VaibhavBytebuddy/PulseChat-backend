@@ -1,6 +1,6 @@
 package com.pulsechat.chat.repository;
 
-import com.pulsechat.chat.model.MessageDocument;
+import com.pulsechat.chat.model.MessageEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -9,11 +9,11 @@ import java.time.Instant;
 import java.util.List;
 
 @Repository
-public interface MessageRepository extends MongoRepository<MessageDocument, String> {
+public interface MessageRepository extends MongoRepository<MessageEntity, String> {
 
-    List<MessageDocument> findByRoomIdOrderByCreatedAtDesc(String roomId, Pageable pageable);
+    List<MessageEntity> findByRoomIdOrderByCreatedAtDesc(String roomId, Pageable pageable);
 
-    List<MessageDocument> findByRoomIdAndCreatedAtBeforeOrderByCreatedAtDesc(
+    List<MessageEntity> findByRoomIdAndCreatedAtBeforeOrderByCreatedAtDesc(
         String roomId,
         Instant cursor,
         Pageable pageable

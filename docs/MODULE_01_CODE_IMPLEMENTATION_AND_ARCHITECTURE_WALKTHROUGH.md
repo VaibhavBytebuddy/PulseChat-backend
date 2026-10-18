@@ -160,3 +160,20 @@ public record SendMessageRequest(
   * **Compile-Time Safety**: Type errors are caught during `mvn compile`, not at runtime.
   * **Zero Reflection Overhead**: Generates direct getter-to-constructor invocations (faster than manual mapping and ModelMapper).
   * **Separation of Concerns**: `ChatServiceImpl` focuses entirely on business logic and STOMP broadcasting without manual conversion boilerplate.
+
+---
+
+## 4. `MongoBaseEntity` Architecture
+
+### 4.1 Base Entity Abstraction
+* **WHAT**:
+  * Created `MongoBaseEntity` in `com.pulsechat.core.entity`.
+  * Centralizes common persistence fields across all collections:
+    * `@Id private String id;`
+    * `@CreatedDate private Instant createdAt;`
+    * `@LastModifiedDate private Instant updatedAt;`
+    * `@Version private Long version;`
+  * Annotated with Lombok `@Getter`, `@Setter`, and `@SuperBuilder`.
+* **WHY (DRY Principle)**:
+  * Eliminates repeating ID, auditing, and optimistic locking annotations across domain models.
+  * Every collection entity (e.g. `ChatRoomEntity`, `MessageEntity`) inherits auditing and versioning automatically.
